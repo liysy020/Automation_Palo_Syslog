@@ -7,6 +7,6 @@ AUTOMATION_DIR="/Automation"
 source "$AUTOMATION_DIR/bin/activate"
 
 # Run the Django server with SSL
-python3 "$AUTOMATION_DIR/manage.py" runsslserver --certificate "$AUTOMATION_DIR/Cert/server.crt" --key "$AUTOMATION_DIR/Cert/server.key" 0.0.0.0:8000
+python3 "$AUTOMATION_DIR/manage.py" runsslserver --certificate "$AUTOMATION_DIR/Cert/server.crt" --key "$AUTOMATION_DIR/Cert/server.key" 0.0.0.0:8000 &
 
 exit 0
