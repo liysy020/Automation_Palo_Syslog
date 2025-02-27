@@ -1,0 +1,64 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<H1>Syslog Records</H1>
+{% if error %}
+{{ error }}
+{% endif %}
+
+{% if logs %}
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Time</th>
+			<th>SrcLocation</th>
+			<th>SrcIP</th>
+			<th>DstIP</th>
+            <th>DstPort</th>
+            <th>Severity</th>
+            <th>Action</th >
+		</tr>
+	</thead>
+	<tbody>
+		{% for log in logs %}
+			<tr>
+				<td>{{ log.TimeReceived|slice:":10" }} {{ log.TimeReceived|slice:"11:19" }}</td>
+				<td>{{ log.SrcLocation}}</td>
+				<td><a class="btn btn-link" href="{% url 'view_logs_pk_srcIP' 0 log.SrcIP %}">{{ log.SrcIP}}</a></td>
+				<td>{{ log.DstIP}}</td>
+				<td>{{ log.DstPort}}</td>
+				<td>{{ log.Severity }}</td>
+                <td>{{ log.Action}}</td>
+				<td><a class="btn btn-primary" href="{% url 'view_logs_pk_srcIP' log.id "None"%}">More</a></td>
+			</tr>
+		{% endfor%}
+	</tbody>
+</table>
+{% endif %}
+{% if log %}
+	<h4> Logfile: {{ log.logfile }}</h4>
+	<h4> Hostname: {{ log.Hostname }}</h4>
+	<h4> Source Country: {{ log.SrcLocation }}</h4>
+	<h4> Source IP: {{ log.SrcIP }}<a class="btn btn-danger" href="{% url 'add_to_blacklist_srcIP' log.SrcIP %}">Blacklist it</a></h4>
+	<h4> Source Port: {{ log.SrcPort }}</h4>
+	<h4> User Account: {{ log.SrcUser }}</h4>
+	<h4> Destination Country: {{ log.DstLocation }}</h4>
+	<h4> Destination IP: {{ log.DstIP }}</h4>
+	<h4> Destination Port: {{ log.DstPort}}</h4>
+	<h4> Threat Name: {{ log.ThreatName}}</h4>
+	<h4> Threat Type: {{ log.Subtype}}</h4>
+	<h4> Severity: {{ log.Severity}}</h4>
+	<h4> Rule Name: {{ log.RuleName}}</h4>
+	<h4> Action: {{ log.Action}}</h4>
+	<h4> Log Type: {{ log.LogType }} </h4>
+	<h4> Last Seen: {{ log.TimeReceived|slice:":10" }} {{ log.TimeReceived|slice:"11:19" }} </h4>
+{% endif %}
+{% if form %}
+	<form class="view_logs" method="post">
+		<br>
+		{% csrf_token %}
+		{{ form.as_p }}
+		<br><button class="btn btn-primary" type="submit">Search</button>
+	</form>
+{% endif %}
+{% endblock %}

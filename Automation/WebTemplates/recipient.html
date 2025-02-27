@@ -1,0 +1,52 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<h1>Notification Recipients</h1>
+{% if error %}
+    <h3>{{ error.0 }}</h3>
+{% endif %}
+
+{% if AddNew %}
+    <td>
+        <form class="register" method="post" action="{% url 'add_recipient' %}">
+            {% csrf_token %}
+            {{ AddNew.as_p }}
+            <button class="btn btn-primary" type="submit">Add</button>
+        </form>
+    </td>
+{% endif %}
+
+{% if Recipients %}
+	<a class="btn btn-primary" href="{% url 'add_recipient' %}">Add New</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Recipients </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for recipient in Recipients %}
+                <tr>  
+                    <td>{{ recipient.Email }}</td>
+                    <td><a class="btn btn-primary" href="{% url 'list_recipient_pk' recipient.id %}">Change</a></td>
+                </tr>
+            {% endfor%}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if Recipient %}
+    <h4> Email: {{ Recipient.Email }}</h4>
+    <td>
+        <form class="register" method="post" action="{% url 'remove_recipient_pk' Recipient.id %}">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+    </td>
+{% endif %}
+
+{% if new %}
+    <a class="btn btn-primary" href="{% url 'add_recipient' %}">Add New</a>
+{% endif %}
+
+{% endblock %}

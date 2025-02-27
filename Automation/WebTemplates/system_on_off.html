@@ -1,0 +1,20 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<h1>System ON / OFF</h1>
+
+{% if error %}
+	<h3> {{error.0}}</h3>
+{% endif %}
+
+{% if status_on %}
+	<h2> System is currently on </h2>
+    <a class="btn btn-danger" href="{% url 'system_on_off' 'reset' %}">Reset</a>
+{% endif %}
+
+{% if not status_on %}
+	<h2> System is currently off </h2>
+    <a class="btn btn-primary" href="{% url 'system_on_off' 'start' %}">Start</a>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<h2>Login</h2>
+
+<form action="/login/" method="POST" class="login">
+{% csrf_token %}
+{% if error %}
+{{ error }}
+{% endif %}
+<br>
+{{ form.as_p }}
+<br>
+<input type="hidden" name="next" value="{{ request.GET.next }}"/>
+<br><button class ="btn btn-primary" type="submit">Login</button>
+</form>
+{% endblock %}

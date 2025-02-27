@@ -1,0 +1,50 @@
+{% extends 'home.html' %}
+
+{% block content %}
+
+{% if error %}
+<h2>Log file registration error</h2>
+    {{ error }}
+{% endif %}
+
+{% if register_form %}
+<form class="register" method="post">
+    <br>
+    {% csrf_token %}
+    {{ register_form.as_p }}
+    <br>
+    <button class="btn btn-primary" type="submit">Register</button>
+</form>
+{% endif %}
+
+{% if Logfiles %}
+<a class="btn btn-primary" href="{% url 'register_logfile' %}">Register New Log</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Host Name</th>
+            <th>Log Type</th>
+            <th>File Location</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in Logfiles %}
+            <tr>
+                <td>{{ log.name }}</td>
+                <td>{{ log.type }}</td>
+                <td>{{ log.path }}</td>
+                <td><form class="register" method="post" action="{% url 'remove_logfile' log.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if new %}
+    <a class="btn btn-primary" href="{% url 'register_logfile' %}">Register New Log</a>
+{% endif %}
+{% endblock %}

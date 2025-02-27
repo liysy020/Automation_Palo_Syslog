@@ -1,0 +1,123 @@
+{% extends 'home.html' %}
+{% block content %}
+
+{% if port_scan1_settings %}
+    <h3>Defense case1 - Port Scan Attack:</h3>
+    {% if port_scan1_settings.0.value == 0 %}
+        <font size="4">Not Active!</font><br>
+    {% else %}
+        If an external public IP trying reach the same company owned public IP on multiple destination ports, more than <font size="5">{{port_scan1_settings.1.value}} ports</font> within <font size="5">{{port_scan1_settings.0.value}} mins</font>.
+        This external public IP will be add to Blacklist database.<br>
+    {% endif %}
+<a class="btn btn-primary" href="{% url 'update_defense_setting' 'case1' %}">Change</a>
+{% endif %}
+
+{% if port_scan1_settings_formset %}
+    <form method="POST">
+        {% csrf_token %}
+        {{port_scan1_settings_formset.management_form}}
+        {{port_scan1_settings_formset.0.name.as_hidden}}
+        {{port_scan1_settings_formset.0.id.as_hidden}}
+        {{port_scan1_settings_formset.1.name.as_hidden}}
+        {{port_scan1_settings_formset.1.id.as_hidden}}
+        If an external public IP trying reach the same company owned public IP on multiple destination ports, more than 
+        {{port_scan1_settings_formset.1.value}} ports within 
+        {{port_scan1_settings_formset.0.value}} mins.
+        This external public IP will be add to Blacklist database.<br>
+        0 mins is to deactivate this!<br>
+        <button class="btn btn-primary" type="submit" name="case1_save" value="submit">save</button>
+    </form>
+{% endif %}
+
+{% if port_scan2_settings %}
+    <h3>Defense case2 - Port Scan Attack:</h3>
+    {% if port_scan2_settings.0.value == 0 %}
+        <font size="4">Not Active!</font><br>
+    {% else %}
+        If an external public address tried to access a same dst port for more than <font size="5">{{port_scan2_settings.1.value}}</font> different company owned <font size="5">public IPs</font> within <font size="5">{{port_scan2_settings.0.value}} mins</font>.
+        This external public IP will be added to Blacklist database.<br>
+    {% endif %}
+    <a class="btn btn-primary" href="{% url 'update_defense_setting' 'case2' %}">Change</a>
+{% endif %}
+
+{% if port_scan2_settings_formset %}
+    <form method="POST">
+        {% csrf_token %}
+        {{port_scan2_settings_formset.management_form}}
+        {{port_scan2_settings_formset.0.name.as_hidden}}
+        {{port_scan2_settings_formset.0.id.as_hidden}}
+        {{port_scan2_settings_formset.1.name.as_hidden}}
+        {{port_scan2_settings_formset.1.id.as_hidden}}
+        If an external public address tried to access a same dst port for more than 
+        {{port_scan2_settings_formset.1.value}} different company owned public IPs within 
+        {{port_scan2_settings_formset.0.value}} mins.
+        This external public IP will be added to Blacklist database.<br>
+        0 mins is to deactivate this!<br>
+        <button class="btn btn-primary" type="submit" name="case2_save" value="submit">save</button>
+    </form>
+{% endif %}
+
+{% if Vul_Scan1_settings %}
+    <h3>Defense case3 - Vulnerability Attack</h3>
+    {% if Vul_Scan1_settings.0.value == 0 %}
+        <font size="4">Not Active!</font>
+    {% endif %}
+    {% if Vul_Scan1_settings.0.value == 1 %}
+        If the firewall reported a <font size="5">"Critical"</font> vulnerability event from an external public IP via any policy. This public IP will be blacklisted
+    {% endif %}
+    {% if Vul_Scan1_settings.0.value == 2 %}
+        If the firewall reported a <font size="5">"High" or "Critical"</font> vulnerability event from an external public IP via any policy. This public IP will be blacklisted
+    {% endif %}
+    <br><a class="btn btn-primary" href="{% url 'update_defense_setting' 'case3' %}">Change</a>
+{% endif %}
+
+{% if vul_scan1_settings_formset %}
+    <form method="POST">
+        0: stop Vulnerability detection<br>
+        1: block public IPs that triggered any "Critical" vulnerability threat<br>
+        2: block public IPs that triggered both "High" or "Critical" vulnerability threat<br>
+        {% csrf_token %}
+        {{vul_scan1_settings_formset.management_form}}
+        {{vul_scan1_settings_formset.0.id.as_hidden}}
+        {{vul_scan1_settings_formset.0.name.as_hidden}}
+        Threat Level: {{vul_scan1_settings_formset.0.value}}<br>
+        <button class="btn btn-primary" type="submit" name="case3_save" value="submit">save</button>
+    </form>
+{% endif %}
+
+{% if month_logs_settings %}
+    <h3>The system keeps {{ month_logs_settings.0.value}} months of record of logs</h3>
+    <br><a class="btn btn-primary" href="{% url 'update_defense_setting' 'month_logs' %}">Change</a>
+{% endif %}
+
+{% if month_logs_settings_formset %}
+    <form method="POST">
+        {% csrf_token %}
+        {{month_logs_settings_formset.management_form}}
+        {{month_logs_settings_formset.0.id.as_hidden}}
+        {{month_logs_settings_formset.0.name.as_hidden}}
+        The system keeps {{month_logs_settings_formset.0.value}} months of records of logs<br>
+        <button class="btn btn-primary" type="submit" name="month_logs_save" value="submit">save</button>
+    </form>
+{% endif %}
+
+{% if month_blacklist_settings %}
+    <h3>Remove inactive blacklisted IPs after {{ month_blacklist_settings.0.value}} months</h3>
+    <br><a class="btn btn-primary" href="{% url 'update_defense_setting' 'month_blacklist' %}">Change</a>
+{% endif %}
+
+{% if month_blacklist_settings_formset %}
+    <form method="POST">
+        {% csrf_token %}
+        {{month_blacklist_settings_formset.management_form}}
+        {{month_blacklist_settings_formset.0.id.as_hidden}}
+        {{month_blacklist_settings_formset.0.name.as_hidden}}
+        Remove inactive blacklisted IPs after {{ month_blacklist_settings_formset.0.value}} months<br>
+        <button class="btn btn-primary" type="submit" name="month_blacklist_save" value="submit">save</button>
+    </form>
+{% endif %}
+
+{% if error %}
+    {{ error }}
+{% endif %}
+{% endblock %}

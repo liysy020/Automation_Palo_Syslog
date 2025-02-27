@@ -1,0 +1,47 @@
+<!doctype html>
+{% load static %}
+<html>
+<head>
+<title> Automation Logging </title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" >
+
+</head>
+
+<body>
+
+<div class="container">
+  <div class="row title" style = "background-image: url({%static 'css/Images/header-logo.png' %}); background-repeat:no-repeat;background-position: top left; background-size: 180px 180px;">
+    <h1 style="text-align:right"> Automation Logging System</h1>
+      <div id="user_auth" class="text-right">
+      {% if user_auth %}
+        <a class="btn btn-primary" href = "/logout/?next=/">Logout</a>
+      {% else %}
+        <a class="btn btn-primary" href = "/login/?next=/">Login</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="sidebar col-md-3">
+        <div class="list-opt-title">
+              <label class="list-opt-a" >Admin</label>
+              <div class="list-sub-opt"><a class="list-opt-a" href="/admin/password_change">Change Password</a></div>
+              <div class="list-sub-opt"><a class="list-opt-a" href="/system">System On Off</a></div>
+              <div class="list-sub-opt"><a class="list-opt-a" href="/smtp_setting">SMTP Settings</a></div>
+              <div class="list-sub-opt"><a class="list-opt-a" href="/view_recipients">Notification Recipients</a></div>
+        </div>
+        <div class="list-opt-title">
+            <label class="list-opt-a" >Logging System</label>
+            <div class="list-sub-opt"><a class="list-opt-a" href="/logfile">Syslog Devices</a></div>
+            <div class="list-sub-opt"><a class="list-opt-a" href="/view_logs">Syslog Records</a></div>
+            <div class="list-sub-opt"><a class="list-opt-a" href="/view_blacklist">Blacklist Records</a></div>
+            <div class="list-sub-opt"><a class="list-opt-a" href="/defense_setting">ActiveDefense Settings</a></div>
+        </div>
+    </div>
+  <div class="content col-md-9">
+      {% block content%}
+      {% endblock%}
+</div>
+</body>
+</html>

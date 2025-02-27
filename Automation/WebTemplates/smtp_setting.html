@@ -1,0 +1,27 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<h1>SMTP Server Settings</h1>
+{% if error %}
+    <h3>{{ error.0 }}</h3>
+{% endif %}
+
+{% if Setting %}
+    <h4>Email Host: {{ Setting.EMAIL_HOST }}</h4>
+    <h4>Use TLS: {{ Setting.EMAIL_USE_TLS }}</h4>
+    <h4>SMTP Port {{ Setting.EMAIL_PORT }}</h4>
+    <h4>Sender address: {{ Setting.EMAIL_HOST_USER }}</h4>
+    <td><a class="btn btn-primary" href="{% url 'update_smtp_setting_pk' Setting.id %}">Change</a></td>
+{% endif %}
+
+{% if update %}
+    <h3> Update SMTP Server Settings</h3>
+    <form class = "register" method="post">
+        <br>
+        {% csrf_token %}
+        {{ update.as_p }}
+        <br><button class="btn btn-primary" type="submit">Save</button>
+    </form>
+{% endif %}
+
+{% endblock %}

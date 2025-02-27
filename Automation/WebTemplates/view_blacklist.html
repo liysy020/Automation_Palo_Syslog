@@ -1,0 +1,69 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<h1>Blacklist Records</h1>
+{% if error %}
+    <h3>{{ error.0 }}</h3>
+{% endif %}
+
+{% if blacklists %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Blacklisted IP</th>
+                <th>Last Seen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ip in blacklists %}
+                <tr>  
+                    <td>{{ ip.Alert}}</td>
+                    <td><a class="btn btn-link" href="{% url 'view_logs_pk_srcIP' 0 ip.IP %}">{{ ip.IP}}</a></td>
+                    <td>{{ ip.LastSeen}}</td>
+                    <td><a class="btn btn-primary" href="{% url 'view_blacklist_pk' ip.id %}">Change</a></td>
+                </tr>
+            {% endfor%}
+        </tbody>
+    </table>
+{% endif %}
+
+{% if blacklist %}
+    <h4> Type: {{ blacklist.Alert }}</h4>
+	<h4> Blacklisted IP: {{ blacklist.IP }}</h4>
+	<h4> LastSeen: {{ blacklist.LastSeen }}</h4>
+    <td>
+        <form class="register" method="post" action="{% url 'remove_blacklisted_ip' blacklist.id %}">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+    </td>
+{% endif %}
+
+{% if form %}
+<a class="btn btn-primary" href="{% url 'add_to_blacklist' %}">Add IP to List</a>
+	<form class="Blacklist_view" method="post">
+		<br>
+		{% csrf_token %}
+		{{ form.as_p }}
+		<br><button class="btn btn-primary" type="submit">Search</button>
+	</form>
+<p>
+{% endif %}
+
+{% if total %}
+    {{ total.0 }}<p>
+{% endif %}
+
+{% if AddToBlacklist %}
+    <td>
+        <A3>It will take 5 mins to take affect from the firewall</A3>
+        <form class="register" method="post" action="{% url 'add_to_blacklist' %}">
+            {% csrf_token %}
+            {{ AddToBlacklist.as_p }}
+            <button class="btn btn-primary" type="submit">Add</button>
+        </form>
+    </td>
+{% endif %}
+
+{% endblock %}
