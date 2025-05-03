@@ -177,24 +177,23 @@ def add_to_blacklist(request, srcIP = 'None'):
 def system_on_off(request,action = 'None'):
 	if request.user.is_authenticated != True:
 		return redirect ('/login/?next=/system')
-	job_lock, created = JobLock.objects.get_or_create(job_name='System_ON_OFF')
-	if action == 'start':
-		if job_lock.is_running == False:
-			scheduler.run()
-			return render (request,'system_on_off.html', {'status_on': True, 'user_auth': True})
-		else:
-			return render (request,'system_on_off.html', {'error': [("System is running already! go to parth:'/system/reset' to reset")], 'user_auth': True})
+	if action =='None' and scheduler.has_jobs():
+		return render (request,'system_on_off.html', {'status_on': True, 'user_auth': True})
+	elif action =='None' and not scheduler.has_jobs():
+		return render (request,'system_on_off.html', {'status_on': False, 'user_auth': True})
 	elif action == 'reset':
-		if job_lock.is_running == True:
-			scheduler.remove_old_jobs()
+		scheduler.remove_old_jobs()
+		if not scheduler.has_jobs():
 			return render (request,'system_on_off.html', {'status_on': False, 'user_auth': True})
 		else:
-			return render (request,'system_on_off.html', {'error': [("System is currently OFF! go to parth:'/system/start' to start it")], 'user_auth': True})
-	else:
-		if job_lock.is_running:
-			return render (request,'system_on_off.html', {'status_on': True, 'user_auth': True})
-		else:
-			return render (request,'system_on_off.html', {'status_on': False, 'user_auth': True})
+			return render (request,'system_on_off.html', {'error': [("Job is still running. Please go back and retry!")], 'user_auth': True})
+	elif action == 'start':
+		if not scheduler.has_jobs():
+			scheduler.run()
+			if scheduler.has_jobs():
+				return render (request,'system_on_off.html', {'status_on': True, 'user_auth': True})
+			else:
+				return render (request,'system_on_off.html', {'error': [("Falsed to start. Please go back and retry!")], 'user_auth': True})
 
 def list_recipient(request, pk = 0):
 	if request.user.is_authenticated != True:

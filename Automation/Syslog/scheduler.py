@@ -65,6 +65,10 @@ def SaveLogToDB ():
 				os.remove(file+'.tmp')
 				logger.debug ('SaveLogToDB completed!')
 			except Exception as e:
+				job_lock = JobLock.objects.get(job_name='FletchLog')
+				job_lock.is_running = False
+				job_lock.save()
+				os.remove(file+'.tmp')
 				logger.debug ('SaveLogToDB exception: '+str(e))
 				return
 def FletchLog():
@@ -73,6 +77,8 @@ def FletchLog():
 		return
 	for logfile in Logfile.objects.all():
 		try:
+			if os.path.exists(logfile.path+'.tmp'):
+				os.remove (logfile.path+'.tmp')
 			if os.path.exists(logfile.path) and os.path.getsize(logfile.path) != 0:
 				os.rename(logfile.path, logfile.path+'.tmp') # rename the file for converting to DB
 				new = os.open(logfile.path, os.O_CREAT) #recreate the log file for Rsyslog to save on going logs
@@ -121,21 +127,20 @@ def run():
 		scheduler.add_job(delete_old_logs, CronTrigger(hour = 1, minute = 0, timezone = 'Australia/Sydney'), max_instances = 1, misfire_grace_time=60, id = 'delete_old_logs_id01', replace_existing=True)
 	if not scheduler.running:
 		scheduler.start()
-	job_lock, created = JobLock.objects.get_or_create(job_name='System_ON_OFF')
-	job_lock.is_running = True
-	job_lock.save()
 
 def remove_old_jobs():
 	global scheduler
 	jobs = scheduler.get_jobs()
 	for job in jobs:
 		scheduler.remove_job(job.id) #clean up any old running jobs before it starts
-	for job_lock in JobLock.objects.all():
-		job_lock.is_running = False
-		job_lock.save()
 		
 def job_exists(job_id):
 	job = scheduler.get_job(job_id)
 	if job:
 		return True
 	return False
+
+def has_jobs():
+	if len(scheduler.get_jobs()) == 0:
+		return False
+	return True
