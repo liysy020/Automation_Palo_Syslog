@@ -73,7 +73,7 @@ def view_logs(request, log_pk=0, srcIP_='None'):
 			if DataRange == 'Last 24 hrs':
 				query_results = query_results.filter(Created_at__gte = timezone.now() - timedelta(hours = 24))
 			elif DataRange == 'Pass 3 days':
-				query_results = query_results.filter(Created_at_gte = timezone.now() - timedelta(days = 3))
+				query_results = query_results.filter(Created_at__gte = timezone.now() - timedelta(days = 3))
 			elif DataRange == 'Pass 7 days':
 				query_results = query_results.filter(Created_at__gte = timezone.now() - timedelta(days = 7))			
 			if SrcLocation != '':
