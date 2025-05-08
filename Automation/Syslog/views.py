@@ -73,7 +73,7 @@ def view_logs(request, log_pk=0, srcIP_='None'):
 			if DataRange == 'Last 24 hrs':
 				query_results = query_results.filter(Created_at__gte = timezone.now() - timedelta(hours = 24))
 			elif DataRange == 'Pass 3 days':
-				query_results = query_results.filter(Created_at__gte = timezone.now() - timedelta(days = 3))
+				query_results = query_results.filter(Created_at_gte = timezone.now() - timedelta(days = 3))
 			elif DataRange == 'Pass 7 days':
 				query_results = query_results.filter(Created_at__gte = timezone.now() - timedelta(days = 7))			
 			if SrcLocation != '':
@@ -258,8 +258,8 @@ def defense_setting(request,case='None'):
 	if request.user.is_authenticated != True:
 		return redirect ('/login/?next=/defense_setting')
 	if request.method == 'GET' and case == 'None':
-		port_scan1_settings = DefenseSetting.objects.filter(name__contains='Port_Scan1')
-		port_scan2_settings = DefenseSetting.objects.filter(name__contains='Port_Scan2')
+		port_scan1_settings = DefenseSetting.objects.filter(name__contains='Port_Scan1').order_by('-name')
+		port_scan2_settings = DefenseSetting.objects.filter(name__contains='Port_Scan2').order_by('-name')
 		Vul_Scan1_settings = DefenseSetting.objects.filter(name__contains='Vul_Scan1')
 		month_logs_settings = DefenseSetting.objects.filter(name__contains='x_month_logs')
 		month_blacklist_settings = DefenseSetting.objects.filter(name__contains='x_month_inactive_blacklist')
@@ -272,11 +272,11 @@ def defense_setting(request,case='None'):
 			})
 	elif request.method == 'GET' and case != 'None':
 		if case == 'case1':
-			port_scan1_settings = DefenseSetting.objects.filter(name__contains='Port_Scan1')
+			port_scan1_settings = DefenseSetting.objects.filter(name__contains='Port_Scan1').order_by('-name')
 			port_scan1_settings_formset = DefenseSettingFormSet(queryset=port_scan1_settings)
 			return render (request, 'defense_setting.html', {'port_scan1_settings_formset':port_scan1_settings_formset})
 		if case == 'case2':
-			port_scan2_settings = DefenseSetting.objects.filter(name__contains='Port_Scan2')
+			port_scan2_settings = DefenseSetting.objects.filter(name__contains='Port_Scan2').order_by('-name')
 			port_scan2_settings_formset = DefenseSettingFormSet(queryset=port_scan2_settings)
 			return render (request, 'defense_setting.html', {'port_scan2_settings_formset':port_scan2_settings_formset})
 		if case == 'case3':
@@ -298,17 +298,17 @@ def defense_setting(request,case='None'):
 				for form in setting_forms:
 					value = form.cleaned_data['value']
 					if value < 0:
-						return render (request, 'defense_setting.html', {'error':"Invaid input value!"})
+						return render (request, 'defense_setting.html', {'error':"Invaid input value Case 1 or 2!"})
 			elif 'case3_save' in request.POST:
 				for form in setting_forms:
 					value = form.cleaned_data['value']
 					if value>=3 or value<0:
-						return render (request, 'defense_setting.html', {'error':"Invaid input value!"})
-			elif 'month_logs_save' or 'month_blacklist_save' in request.POST:
+						return render (request, 'defense_setting.html', {'error':"Invaid input value case 3!"})
+			elif 'month_logs_save' in request.POST or 'month_blacklist_save' in request.POST:
 				for form in setting_forms:
 					value = form.cleaned_data['value']
 					if value < 1 :
-						return render (request, 'defense_setting.html', {'error':"Invaid input value!"})
+						return render (request, 'defense_setting.html', {'error':"Invaid input of Month settings!"})
 			setting_forms.save()
 			return redirect('defense_setting')
 	return render (request, 'defense_setting.html', {'error':"Invaid form returned"})

@@ -46,8 +46,9 @@ class SearchPATrafficLogForm (forms.Form):
 class SeachBlacklistForm (forms.Form):
     ALERT_CHOICES = [
         ('all', 'All'),
-        ('Port Scan Attack','Port Scan Attack'),
-        ('Vulnerability scan','Vulnerability Attack'),
+        ('Port Scan Attack v1', 'Port Scan'),
+        ('Port Scan Attack v2', 'IP Scan'),
+        ('Vulnerability','Vulnerability Attack'),
         ('User Added', 'User Added')
     ]
     Alert = forms.ChoiceField(label = 'Blocked by', choices = ALERT_CHOICES, initial='all', required = False, widget=forms.Select(attrs={'class': 'dropdown-field'}))
