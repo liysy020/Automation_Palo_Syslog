@@ -68,7 +68,6 @@ def SaveLogToDB ():
 				job_lock = JobLock.objects.get(job_name='FletchLog')
 				job_lock.is_running = False
 				job_lock.save()
-				os.remove(file+'.tmp')
 				logger.debug ('SaveLogToDB exception: '+str(e))
 				return
 def FletchLog():
@@ -141,6 +140,7 @@ def job_exists(job_id):
 	return False
 
 def has_jobs():
+	global scheduler
 	if len(scheduler.get_jobs()) == 0:
 		return False
 	return True
