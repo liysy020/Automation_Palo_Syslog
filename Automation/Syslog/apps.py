@@ -41,7 +41,3 @@ class SyslogConfig(AppConfig):
         for interface in netifaces.interfaces():
             interface_info = netifaces.ifaddresses(interface)
             settings.ALLOWED_HOSTS.append(interface_info.get(netifaces.AF_INET)[0]['addr'])
-        #Start the system
-        from Syslog import scheduler
-        if not scheduler.has_jobs():
-            scheduler.run()
