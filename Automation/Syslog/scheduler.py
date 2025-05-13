@@ -134,6 +134,7 @@ def remove_old_jobs():
 		scheduler.remove_job(job.id) #clean up any old running jobs before it starts
 		
 def job_exists(job_id):
+	global scheduler
 	job = scheduler.get_job(job_id)
 	if job:
 		return True
