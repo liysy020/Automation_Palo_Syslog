@@ -10,11 +10,14 @@ import os, subprocess, time, re, logging
 
 logger = logging.getLogger('mySchedulerLog')
 
+max_log_file_size = 100 # in MB
+
 jobstores = {'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
+
 def SaveLogToDB ():
 	for log in Logfile.objects.all():
-		if log.type == 'Firewall':
+		if log.type == 'Firewall' and os.path.exists(log.path+'.tmp'):
 			file = log.path
 			try:
 				open_file = open(file+'.tmp','r')
@@ -69,10 +72,15 @@ def SaveLogToDB ():
 				job_lock.is_running = False
 				job_lock.save()
 				logger.debug ('SaveLogToDB exception: '+str(e))
-				return
+				continue
+		else:
+			logger.debug (log.name + ': SaveLogToDB did not run due to tmp file missing')
+	return
+
 def FletchLog():
 	job_lock, created = JobLock.objects.get_or_create(job_name="FletchLog")
 	if job_lock.is_running:
+		logger.debug ('FletchLog job did not run since job_lock is true!')
 		return
 	for logfile in Logfile.objects.all():
 		try:
@@ -83,11 +91,22 @@ def FletchLog():
 				new = os.open(logfile.path, os.O_CREAT) #recreate the log file for Rsyslog to save on going logs
 				os.close(new)
 				subprocess.run(['chmod', '777', logfile.path])
-				time.sleep(5)
-				subprocess.run(['sudo', 'systemctl', 'restart', 'rsyslog.service']) #restart the rsyslog service to adapt the newly created file
 		except OSError as e:
 			logger.debug('Fletchlog exception: '+str(e))
-	time.sleep(30)
+			continue
+	for logfile in Logfile.objects.all():
+		try:
+			if (os.path.getsize(logfile.path+'.tmp') // (1024 * 1024)) > max_log_file_size:
+				logger.debug ('Log file over size and being cleaned: '+ str(os.path.getsize(logfile.path+'.tmp') // (1024 * 1024)))
+				os.remove(logfile.path+'.tmp') #delete oversize logs and skip
+		except:
+			continue
+	time.sleep(10)
+	try:
+		subprocess.run(['sudo', 'systemctl', 'restart', 'rsyslog.service']) #restart the rsyslog service to adapt the newly created file
+	except Exception as e:
+		logger.debug ('Failed to restart the rsyslog')
+		return
 	job_lock.is_running = True
 	job_lock.save()
 	logger.debug ('Fletch logs to DB started!')
@@ -132,16 +151,17 @@ def remove_old_jobs():
 	jobs = scheduler.get_jobs()
 	for job in jobs:
 		scheduler.remove_job(job.id) #clean up any old running jobs before it starts
+	job_lock, created = JobLock.objects.get_or_create(job_name="FletchLog")
+	job_lock.is_running = False
+	job_lock.save()
 		
 def job_exists(job_id):
-	global scheduler
 	job = scheduler.get_job(job_id)
 	if job:
 		return True
 	return False
 
 def has_jobs():
-	global scheduler
 	if len(scheduler.get_jobs()) == 0:
 		return False
 	return True

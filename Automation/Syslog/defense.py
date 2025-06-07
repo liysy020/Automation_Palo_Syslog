@@ -18,22 +18,24 @@ def contains_number(s):
 def port_scan1():
 	x_min = DefenseSetting.objects.get(name = 'Port_Scan1_x_min')
 	if x_min.value == 0:
+		logger.debug ('Port scan case 1 has been disabled!')
 		return
 	x_dstPort = DefenseSetting.objects.get(name = 'Port_Scan1_x_dstPort')
 	ten_minutes_ago = timezone.localtime(timezone.now()) - timedelta(minutes=x_min.value)
 	last_10min_logs = []
-	for log in PATrafficLog.objects.filter(LogType='TRAFFIC'): #filter the last 10min logs
+	for log in PATrafficLog.objects.filter(LogType='TRAFFIC',Created_at__gte = ten_minutes_ago): #filter the last x mins saved logs
 		try:
 			time_received = parser.parse(log.TimeReceived)
 		except:
 			continue
 		if time_received.tzinfo is None:
 			time_received = timezone.make_aware(time_received, timezone.get_current_timezone())
-		if time_received >= ten_minutes_ago:
+		if time_received >= ten_minutes_ago: #filter the last x mins of logs
 			last_10min_logs.append(log)
 	srcIP = ''
 	dstIP = ''
 	dstPorts = []
+	total_blacklist = ''
 	for log in last_10min_logs: #comparing source IP and destination IPs if they are the same
 		if not contains_number(log.SrcLocation): #public IP only
 			if srcIP == '':
@@ -47,8 +49,8 @@ def port_scan1():
 				if len(dstPorts) >= x_dstPort.value:
 					Blacklist.objects.create(Alert = 'Port Scan Attack v1', IP = srcIP) # create a blacklist record
 					if Blacklist.objects.filter(IP = srcIP).exists():
-						send_notification ('Defense Alert: Port scan activity detected', srcIP+ ' from '+ log.SrcLocation +' has been blacklisted')
-						logger.debug ('Defense port scan case 1 found '+ srcIP + ' sent email notification!')
+						total_blacklist += srcIP + ' from '+ log.SrcLocation + '\n'
+						logger.debug ('Defense port scan case 1 found '+ srcIP )
 					else:
 						logger.debug ('Defense port scan case 1 failed to add '+srcIP+' to Blacklist DB')
 				srcIP = ''
@@ -59,7 +61,10 @@ def port_scan1():
 				srcIP = ''
 				dstIP = ''
 				dstPorts = []
-	logger.debug ('Port Scan case 1 completed!')
+	if not total_blacklist =='':
+		send_notification ('Defense Alert: Port scan alert','Port scan activity detected below list of public IPs and blacklisted:\n'+total_blacklist)
+		logger.debug ('Port scan case 1: email notification sent!')
+	logger.debug ('Port Scan case 1 completed successfully!')
 
 # case2 Port Scan Attack:
 # If an external public address tried to access a same dst port for more than 10 different company owned public IPs within 10mins.
@@ -72,18 +77,19 @@ def port_scan2():
 	x_dstIP = DefenseSetting.objects.get(name = 'Port_Scan2_x_dstIP')
 	ten_minutes_ago = timezone.localtime(timezone.now()) - timedelta(minutes=x_min.value)
 	last_10min_logs = []
-	for log in PATrafficLog.objects.filter(LogType='TRAFFIC'): #filter the last 10min logs
+	for log in PATrafficLog.objects.filter(LogType='TRAFFIC',Created_at__gte = ten_minutes_ago): #filter the last x mins saved logs
 		try:
 			time_received = parser.parse(log.TimeReceived)
 		except:
 			continue
 		if time_received.tzinfo is None:
 			time_received = timezone.make_aware(time_received, timezone.get_current_timezone())
-		if time_received >= ten_minutes_ago:
+		if time_received >= ten_minutes_ago: #filter last x mins of logs
 			last_10min_logs.append(log)
 	dstPort = ''
 	srcIP = ''
 	dstIPs = []
+	total_blacklist = ''
 	for log in last_10min_logs:
 		if not contains_number(log.SrcLocation):#public IP only
 			if srcIP == '':
@@ -97,8 +103,8 @@ def port_scan2():
 				if len (dstIPs) >= x_dstIP.value:
 					Blacklist.objects.create(Alert = 'Port Scan Attack v2', IP = srcIP)
 					if Blacklist.objects.filter(IP = srcIP).exists():
-						send_notification ('Defense Alert: Port scan activity detected', srcIP+ ' from '+ log.SrcLocation +' has been blacklisted')
-						logger.debug ('Defense port scan case 2 found '+ srcIP + ' sent email notification!')
+						total_blacklist += srcIP+ ' from '+ log.SrcLocation +'\n'
+						logger.debug ('Defense port scan case 2 found '+ srcIP)
 					else:
 						logger.debug ('Defense port scan case 2 failed to add '+srcIP+' to Blacklist DB')
 				dstPort = ''
@@ -111,7 +117,10 @@ def port_scan2():
 				dstPort = ''
 				srcIP = ''
 				dstIPs = []
-	logger.debug ('Port Scan case 2 completed!')
+	if not total_blacklist =='':
+		send_notification ('Defense Alert: IP scan alert','IP scan activity detected below list of public IPs and blacklisted:\n'+total_blacklist)
+		logger.debug ('Port scan case 2: email notification sent!')
+	logger.debug ('Port Scan case 2 completed successfully!')
 
 #If the firewall reported a critical vulnerability event from an external public IP via any policy. This public IP will be blacklisted
 def vul_scan1():
@@ -122,13 +131,15 @@ def vul_scan1():
 	elif x_severity.value == 2:
 		levels = ['critical','high']
 	else:
+		logger.debug ('Vulnerability Scan case disabled!')
 		return
+	total_blacklist = ''
 	for log in PATrafficLog.objects.filter(Created_at__gte=ten_minutes_ago):
 		for severity_level in levels:
 			if not contains_number(log.SrcLocation) and log.Severity == severity_level and not Blacklist.objects.filter(IP=log.SrcIP).exists():
 				Blacklist.objects.create(Alert = 'Vulnerability Scan v1', IP = log.SrcIP)
 				if Blacklist.objects.filter(IP = log.SrcIP).exists():
-					send_notification ('Defense Alert: Vulnerability scan activity detected', log.SrcIP+ ' from '+ log.SrcLocation+' has been blacklisted')
+					total_blacklist += log.SrcIP+ ' from '+ log.SrcLocation+'\n'
 					logger.debug ('Defense vulnerability scan case 1 found '+ log.SrcIP + ' sent email notification!')
 				else:
 					logger.debug ('Defense vulnerability scan case 1 failed to add '+log.SrcIP+' to Blacklist DB')
@@ -136,6 +147,9 @@ def vul_scan1():
 				Blacklist_IP = Blacklist.objects.get(IP=log.SrcIP)
 				Blacklist_IP.Alert = 'Vulnerability Scan v1'
 				Blacklist_IP.save()
+	if not total_blacklist =='':
+		send_notification ('Defense Alert: Vulnerability scan alert', 'Vulnerability scan activity detected below public IP and blacklisted:\n'+total_blacklist)
+		logger.debug ('Vulerability scan: email notification sent!')
 	logger.debug ('Vulnerability Scan case 1 completed!')
 
 #not being implemented as auto run function. use for initial setup or when it needs.
@@ -153,15 +167,15 @@ def vul_scan_alllogs():
 
 def write_to_blacklist_file():
 	blacklist_file = os.path.join (settings.STATICFILES_DIRS[0],'blacklist.txt')
-	Cisco_blacklist_file = os.path.join (settings.STATICFILES_DIRS[0],'Cisco_blacklist_acl.txt')
+	#Cisco_blacklist_file = os.path.join (settings.STATICFILES_DIRS[0],'Cisco_blacklist_acl.txt')
 	open_file1 = open(blacklist_file,'w')
-	open_file2 = open(Cisco_blacklist_file,'w')
+	#open_file2 = open(Cisco_blacklist_file,'w')
 	for list in Blacklist.objects.all():
 		open_file1.write (list.IP+'\n')
-		open_file2.write ('deny ip host '+list.IP+' any log\n')
-	open_file2.write ('permit ip any any log\n')
+	#	open_file2.write ('deny ip host '+list.IP+' any log\n')
+	#open_file2.write ('permit ip any any log\n')
 	open_file1.close()
-	open_file2.close()
+	#open_file2.close()
 
 def run():
 	logger.debug ('Defense jobs started!')

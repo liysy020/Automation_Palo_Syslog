@@ -2,6 +2,7 @@ from django.apps import AppConfig
 from django.conf import settings
 
 
+
 class SyslogConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'Syslog'
@@ -41,3 +42,6 @@ class SyslogConfig(AppConfig):
         for interface in netifaces.interfaces():
             interface_info = netifaces.ifaddresses(interface)
             settings.ALLOWED_HOSTS.append(interface_info.get(netifaces.AF_INET)[0]['addr'])
+        #Clean old jobs
+        from Syslog import scheduler
+        scheduler.remove_old_jobs()
