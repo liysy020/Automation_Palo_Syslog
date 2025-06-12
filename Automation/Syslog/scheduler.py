@@ -7,6 +7,8 @@ from django.utils import timezone
 from dateutil import parser
 from Syslog import defense
 import os, subprocess, time, re, logging
+from functools import wraps
+from django.db import connection
 
 logger = logging.getLogger('mySchedulerLog')
 
@@ -15,6 +17,17 @@ max_log_file_size = 100 # in MB
 jobstores = {'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')}
 scheduler = BackgroundScheduler(jobstores=jobstores)
 
+def with_safe_db_connection(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        connection.close()  # Drop stale connection
+        try:
+            return func(*args, **kwargs)
+        finally:
+            connection.close()  # Clean up after
+    return wrapper
+	
+@with_safe_db_connection
 def SaveLogToDB ():
 	for log in Logfile.objects.all():
 		if log.type == 'Firewall' and os.path.exists(log.path+'.tmp'):
