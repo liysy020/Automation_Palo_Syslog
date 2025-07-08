@@ -27,7 +27,7 @@ SECRET_KEY = 'cv5h0&thg6b161sy_z*adfagoz(%!hk+9^ldl)0y^04j!i%03_%@2%'
 DEBUG = False
 
 ALLOWED_HOSTS = []
-
+CSRF_TRUSTED_ORIGINS = []
 
 # Application definition
 
@@ -152,7 +152,7 @@ SESSION_COOKIE_AGE = 8*60*60
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 SESSION_TIMEOUT_REDIRECT = '/login/?next=/'
 
-if DEBUG: #turn on debug
+if not DEBUG: #turn on debug
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
