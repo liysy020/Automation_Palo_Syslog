@@ -152,7 +152,7 @@ SESSION_COOKIE_AGE = 8*60*60
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 SESSION_TIMEOUT_REDIRECT = '/login/?next=/'
 
-if not DEBUG: #turn on debug
+if DEBUG: #turn on debug
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
