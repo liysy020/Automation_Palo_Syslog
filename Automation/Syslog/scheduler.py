@@ -134,6 +134,7 @@ def remove_old_blacklist():
 		one_month_ago = timezone.now() - timedelta(days=x_month_inactive_blacklist.value * 30)
 		old_entries = Blacklist.objects.filter(LastSeen__lt=one_month_ago).exclude(Alert__contains='user added')
 		old_entries.delete()
+		logger.debug ('Successfully removed blacklist older than '+ str(one_month_ago))
 	except Exception as e:
 		logger.debug ('Remove_old_blacklist exception: '+str(e))
 
@@ -142,6 +143,7 @@ def delete_old_logs():
 	try:
 		six_months_ago = timezone.now() - timedelta(days=x_month_logs.value * 30)
 		PATrafficLog.objects.filter(Created_at__lt=six_months_ago).delete()
+		logger.debug ('Successfully removed logs older than '+ str(six_months_ago))
 	except Exception as e:
 		logger.debug ('Delete_old_logs exception: '+str(e))
 
