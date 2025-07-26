@@ -7,6 +7,6 @@ AUTOMATION_DIR="/Automation"
 source "$AUTOMATION_DIR/bin/activate"
 
 # Run the Django server with SSL
-python3 "$AUTOMATION_DIR/manage.py" runsslserver --certificate "$AUTOMATION_DIR/Cert/server.crt" --key "$AUTOMATION_DIR/Cert/server.key" 0.0.0.0:8000 &
+"$AUTOMATION_DIR/bin/gunicorn" ActiveDefense.wsgi:application --bind 127.0.0.1:8000
 
 exit 0
